@@ -443,7 +443,8 @@
 
         <div class="form-group" id="uploadStepBox" style="margin-top: 15px; display:none;">
             <label for="sigUpload">Upload Signed PDF / Signature Image:</label>
-            <input type="file" id="sigUpload" accept="application/pdf,image/*" onchange="handleSignatureUpload(event)">
+            <input type="file" id="sigUpload" accept="application/pdf,image/*" capture="environment" onchange="handleSignatureUpload(event)">
+            <div style="font-size:12px;color:#475569;margin-top:6px;">Just upload your signature (PDF, image, or a camera photo) and press the Submit button below.</div>
         </div>
 
         <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
@@ -451,16 +452,14 @@
         <div class="form-group" style="margin-top: 15px;">
             <label style="font-weight:normal;">3. Submit</label>
         </div>
-        <button class="btn-drive" id="driveBtn" onclick="submitToDrive()">Submit — Save to School's Google Drive</button>
+        <button class="btn-drive" id="driveBtn" onclick="submitToDrive()">Submit</button>
         <div class="drive-status" id="driveStatus"></div>
 
-        <button class="btn-drive" style="background-color:#334155;" onclick="downloadAndOpenDrive()">Download PDF &amp; Open Google Drive (manual, no sign-in)</button>
-        <div style="font-size:11px;color:#64748b;text-align:center;margin-top:4px;">If auto-save above doesn't work on this browser, use this instead — it downloads the PDF and opens Drive so you can drag it in yourself.</div>
-
-        <div class="drive-setup-box">
-            <strong>Apps Script Web App URL</strong> (every submission — whichever signature mode is used — is saved directly to your "Leave Application" folder in Google Drive; no sign-in needed by whoever submits):
-            <input type="text" id="driveScriptUrl" placeholder="https://script.google.com/macros/s/XXXX/exec" value="https://script.google.com/macros/s/AKfycbxpNwy79mPQtNC0B5QZG5WHnbkROSoZ6HgS3BvYJCBAf76Vfx-y_Z_RkstK1Dlc8Vg_/exec" style="margin-top:8px;">
+        <div style="font-size:12px;color:#0b2545;background:#fff7ed;border:1px dashed #f59e0b;border-radius:6px;padding:10px;margin-top:14px;">
+            <strong>Important:</strong> After you rejoin duty following your leave, submit a hard copy of this application with your original signature and date to the office.
         </div>
+
+        <input type="hidden" id="driveScriptUrl" value="https://script.google.com/macros/s/AKfycbxpNwy79mPQtNC0B5QZG5WHnbkROSoZ6HgS3BvYJCBAf76Vfx-y_Z_RkstK1Dlc8Vg_/exec">
     </div>
 
     <!-- Right Live Generation Preview Layout (Locked Single Page Context) -->
@@ -508,7 +507,8 @@
                     <div class="signature-line">
                         Yours faithfully,<br>
                         <strong id="viewSignatureName">[Applicant Signature]</strong><br>
-                        <span id="viewSignatureDesignation"></span>
+                        <span id="viewSignatureDesignation"></span><br>
+                        Taldangra Fulmati High School (H.S.)
                     </div>
                 </div>
             </div>
@@ -752,6 +752,7 @@
         }
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('appDate').value = today;
+        document.getElementById('fromDate').value = today;
         updateApplication();
     }
 </script>
