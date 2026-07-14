@@ -232,12 +232,12 @@
             margin-bottom: 10px;
         }
 
-        /* Strict Single-Page Anchored Signature block Layout */
+        /* Signature block sits directly under the application matter — never pinned to page bottom */
         .letter-footer {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-top: 15px; /* Small automatic gap right after the last line */
+            margin-top: 28px; /* Small fixed gap right after the last line of the letter body */
             page-break-inside: avoid; 
             break-inside: avoid;
         }
@@ -285,11 +285,14 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                min-height: auto; /* Drops calculation constraints to let page scale naturally */
+                height: 273mm; /* 297mm page minus 12mm top + 12mm bottom @page margin */
+                max-height: 273mm;
+                overflow: hidden; /* Guarantees strictly one A4 page: excess content is clipped, never spills to page 2 */
                 box-shadow: none;
                 padding: 0;
                 page-break-inside: avoid;
                 break-inside: avoid;
+                page-break-after: avoid;
             }
         }
 
@@ -417,11 +420,12 @@
         </div>
 
         <div class="form-group" style="margin-top: 15px;">
-            <label>Choose how to sign your application:</label>
-            <div style="display:flex; flex-direction:column; gap:6px; margin-top:6px; font-size:14px;">
-                <label style="font-weight:normal;"><input type="radio" name="sigMethod" value="esign" onchange="handleSigMethodChange()"> 1. eSign via DigiLocker</label>
-                <label style="font-weight:normal;"><input type="radio" name="sigMethod" value="upload" onchange="handleSigMethodChange()"> 2. Upload Signature (PDF / Image)</label>
-            </div>
+            <label for="sigMethodSelect">Choose how to sign your application (one mode at a time):</label>
+            <select id="sigMethodSelect" onchange="handleSigMethodChange()">
+                <option value="">-- Select Signature Mode --</option>
+                <option value="esign">1. eSign via DigiLocker</option>
+                <option value="upload">2. Upload Signature (PDF / Image)</option>
+            </select>
         </div>
 
         <div class="digilocker-box" id="esignStepBox" style="display:none;">
@@ -454,7 +458,7 @@
         <div style="font-size:11px;color:#64748b;text-align:center;margin-top:4px;">If auto-save above doesn't work on this browser, use this instead — it downloads the PDF and opens Drive so you can drag it in yourself.</div>
 
         <div class="drive-setup-box">
-            <strong>Apps Script Web App URL</strong> (every submission is saved directly to the school's Google Drive — no sign-in needed by whoever submits):
+            <strong>Apps Script Web App URL</strong> (every submission — whichever signature mode is used — is saved directly to your "Leave Application" folder in Google Drive; no sign-in needed by whoever submits):
             <input type="text" id="driveScriptUrl" placeholder="https://script.google.com/macros/s/XXXX/exec" value="https://script.google.com/macros/s/AKfycbzXaGNbF9GlJa4QC23W0bi9Pi-v6yAtT7YsK2mTXwBvDzQupTSAO_e8bfCatNSvOpeL/exec" style="margin-top:8px;">
         </div>
     </div>
@@ -635,11 +639,20 @@
     }
 
     function handleSigMethodChange() {
-        const selected = document.querySelector('input[name="sigMethod"]:checked');
+        const selected = document.getElementById('sigMethodSelect').value;
         const esignBox = document.getElementById('esignStepBox');
         const uploadBox = document.getElementById('uploadStepBox');
-        esignBox.style.display = (selected && selected.value === 'esign') ? 'block' : 'none';
-        uploadBox.style.display = (selected && selected.value === 'upload') ? 'block' : 'none';
+        esignBox.style.display = (selected === 'esign') ? 'block' : 'none';
+        uploadBox.style.display = (selected === 'upload') ? 'block' : 'none';
+
+        // Only one signature mode is ever active — clear leftover data when switching away
+        if (selected !== 'upload') {
+            const sigUpload = document.getElementById('sigUpload');
+            if (sigUpload) sigUpload.value = '';
+        }
+        if (!selected) {
+            document.getElementById('digisignBox').innerHTML = 'Space for Digital Signature (eSign/DSC)';
+        }
     }
 
     function getDriveScriptUrl() {
