@@ -318,10 +318,13 @@
             <label for="recipient">Address Application To:</label>
             <select id="recipient" oninput="updateApplication()">
                 <option value="The Headmaster">The Headmaster</option>
-                <option value="The Administrator through the Headmaster">The Administrator through the Headmaster</option>
+                <option value="The Secretary">The Secretary</option>
                 <option value="The Administrator">The Administrator</option>
                 <option value="The President">The President</option>
             </select>
+            <div id="mlRoutingNote" style="display:none;font-size:12px;color:#0f766e;margin-top:6px;">
+                Medical Leave applications are auto-addressed to <strong>The Administrator</strong>, routed <strong>Through The Headmaster</strong>.
+            </div>
         </div>
 
         <div class="form-row">
@@ -363,6 +366,17 @@
                 <option value="Child Care Leave">Child Care Leave</option>
                 <option value="Paternity Leave">Paternity Leave</option>
             </select>
+        </div>
+
+        <div id="mlRulesDashboard" style="display:none;margin-top:6px;margin-bottom:18px;padding:14px;background-color:#f0f9ff;border:1px dashed #0284c7;border-radius:6px;font-size:12px;color:#0c4a6e;line-height:1.6;">
+            <strong style="display:block;margin-bottom:6px;font-size:13px;">Medical Leave Rules</strong>
+            <div style="margin-bottom:8px;"><strong>'Medical Certificate'</strong> means a certificate granted by a Registered Medical Practitioner in the following form:</div>
+            <div style="font-style:italic;padding:8px 10px;background:#ffffff;border-radius:4px;border:1px solid #bae6fd;">
+                "I .................... after careful personal examination of the case certify that ......................... whose signature is given above is suffering from ........................ and I consider that a period of absence from duty of .................. is absolutely necessary for the restoration of his or her health."<br><br>
+                Date: ............<br>
+                Government Medical Officer or Registered Medical Practitioner.
+            </div>
+            <div style="margin-top:8px;">A similar certificate may be necessary when a teacher or a non-teaching employee is declared fit to rejoin his duties.</div>
         </div>
 
         <div class="form-row">
@@ -425,6 +439,7 @@
                 <option value="">-- Select Signature Mode --</option>
                 <option value="esign">1. eSign via DigiLocker</option>
                 <option value="upload">2. Upload Signature (PDF / Image)</option>
+                <option value="camera">3. Capture via Camera</option>
             </select>
         </div>
 
@@ -443,8 +458,21 @@
 
         <div class="form-group" id="uploadStepBox" style="margin-top: 15px; display:none;">
             <label for="sigUpload">Upload Signed PDF / Signature Image:</label>
-            <input type="file" id="sigUpload" accept="application/pdf,image/*" capture="environment" onchange="handleSignatureUpload(event)">
-            <div style="font-size:12px;color:#475569;margin-top:6px;">Just upload your signature (PDF, image, or a camera photo) and press the Submit button below.</div>
+            <input type="file" id="sigUpload" accept="application/pdf,image/*" onchange="handleSignatureUpload(event)">
+            <div style="font-size:12px;color:#475569;margin-top:6px;">Choose a PDF or image file from your device, then press the Submit button below.</div>
+        </div>
+
+        <div class="form-group" id="cameraStepBox" style="margin-top: 15px; display:none;">
+            <label>Capture Signature via Camera:</label>
+            <div style="font-size:12px;color:#475569;margin-bottom:8px;">This opens your phone's camera or your computer's webcam, whichever is available. Position your signature and capture.</div>
+            <video id="cameraPreview" autoplay playsinline muted style="width:100%;max-height:220px;background:#000;border-radius:6px;display:none;"></video>
+            <canvas id="cameraCanvas" style="display:none;"></canvas>
+            <div style="display:flex;gap:8px;margin-top:8px;">
+                <button type="button" class="btn-print" style="margin-top:0;" id="openCameraBtn" onclick="openCamera()">Open Camera</button>
+                <button type="button" class="btn-print" style="margin-top:0;display:none;background-color:#0f9d58;" id="captureBtn" onclick="capturePhoto()">Capture Photo</button>
+                <button type="button" class="btn-print" style="margin-top:0;display:none;background-color:#64748b;" id="retakeBtn" onclick="retakePhoto()">Retake</button>
+            </div>
+            <div style="font-size:11px;color:#dc2626;margin-top:6px;" id="cameraError"></div>
         </div>
 
         <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
@@ -454,6 +482,9 @@
         </div>
         <button class="btn-drive" id="driveBtn" onclick="submitToDrive()">Submit</button>
         <div class="drive-status" id="driveStatus"></div>
+        <div style="text-align:center;font-size:12px;font-weight:600;color:#b91c1c;margin-top:10px;">
+            Leave cannot be claimed as a matter of right.
+        </div>
 
         <div style="font-size:12px;color:#0b2545;background:#fff7ed;border:1px dashed #f59e0b;border-radius:6px;padding:10px;margin-top:14px;">
             <strong>Important:</strong> After you rejoin duty following your leave, submit a hard copy of this application with your original signature and date to the office.
@@ -479,7 +510,11 @@
                         To<br>
                         <span id="viewRecipient" style="font-weight: 600;">The Headmaster</span>,<br>
                         Taldangra Fulmati High School [H.S.],<br>
-                        Taldangra, Bankura.
+                        Taldangra, Bankura.<span id="viewThroughBlock" style="display:none;"><br>
+                        Through<br>
+                        <span id="viewThroughName" style="font-weight: 600;">The Headmaster</span>,<br>
+                        Taldangra Fulmati High School [H.S.],<br>
+                        Taldangra, Bankura.</span>
                     </div>
 
                     <div class="subject-block">
@@ -532,11 +567,20 @@
     }
 
     function updateApplication() {
-        const recipient = document.getElementById('recipient').value;
         const name = document.getElementById('applicantName').value || '[Name]';
         const designationSelect = document.getElementById('designation').value;
         const designation = (designationSelect === 'Others' ? document.getElementById('designationOther').value : designationSelect) || '[Designation]';
         const leaveType = document.getElementById('leaveType').value;
+        const isMedicalLeave = leaveType === 'Medical Leave';
+
+        // Medical Leave is always addressed to The Administrator, routed Through The Headmaster
+        const recipientSelect = document.getElementById('recipient');
+        recipientSelect.disabled = isMedicalLeave;
+        const recipient = isMedicalLeave ? 'The Administrator' : recipientSelect.value;
+        document.getElementById('mlRoutingNote').style.display = isMedicalLeave ? 'block' : 'none';
+        document.getElementById('viewThroughBlock').style.display = isMedicalLeave ? 'inline' : 'none';
+        document.getElementById('mlRulesDashboard').style.display = isMedicalLeave ? 'block' : 'none';
+
         const reasonSelect = document.getElementById('reason').value;
         const reason = (reasonSelect === 'Others' ? document.getElementById('reasonOther').value : reasonSelect) || '............................................................. (Reason)';
         
@@ -642,17 +686,105 @@
         const selected = document.getElementById('sigMethodSelect').value;
         const esignBox = document.getElementById('esignStepBox');
         const uploadBox = document.getElementById('uploadStepBox');
+        const cameraBox = document.getElementById('cameraStepBox');
         esignBox.style.display = (selected === 'esign') ? 'block' : 'none';
         uploadBox.style.display = (selected === 'upload') ? 'block' : 'none';
+        cameraBox.style.display = (selected === 'camera') ? 'block' : 'none';
 
         // Only one signature mode is ever active — clear leftover data when switching away
         if (selected !== 'upload') {
             const sigUpload = document.getElementById('sigUpload');
             if (sigUpload) sigUpload.value = '';
         }
+        if (selected !== 'camera') {
+            stopCamera();
+        }
         if (!selected) {
             document.getElementById('digisignBox').innerHTML = 'Space for Digital Signature (eSign/DSC)';
         }
+    }
+
+    // --- Camera capture (opens the phone's camera or the computer's webcam) ---
+    let cameraStream = null;
+
+    async function openCamera() {
+        const video = document.getElementById('cameraPreview');
+        const errorBox = document.getElementById('cameraError');
+        errorBox.innerText = '';
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            errorBox.innerText = 'Camera access is not supported in this browser. Please use the Upload option instead.';
+            return;
+        }
+        if (!window.isSecureContext) {
+            errorBox.innerText = 'Camera access requires a secure (https) connection. Please use the Upload option instead.';
+            return;
+        }
+
+        try {
+            // Prefer the rear/environment camera on phones; falls back to whatever camera is available on a computer
+            cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
+            video.srcObject = cameraStream;
+            video.style.display = 'block';
+            document.getElementById('openCameraBtn').style.display = 'none';
+            document.getElementById('captureBtn').style.display = 'inline-block';
+            document.getElementById('retakeBtn').style.display = 'none';
+        } catch (err) {
+            console.error(err);
+            if (err.name === 'NotAllowedError') {
+                errorBox.innerText = 'Camera permission denied. Please allow camera access in your browser settings, or use the Upload option instead.';
+            } else if (err.name === 'NotFoundError') {
+                errorBox.innerText = 'No camera was found on this device. Please use the Upload option instead.';
+            } else {
+                errorBox.innerText = 'Could not access the camera. Please use the Upload option instead.';
+            }
+        }
+    }
+
+    function capturePhoto() {
+        const video = document.getElementById('cameraPreview');
+        const canvas = document.getElementById('cameraCanvas');
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        const dataUrl = canvas.toDataURL('image/png');
+
+        const box = document.getElementById('digisignBox');
+        box.innerHTML = `<img src="${dataUrl}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
+
+        video.style.display = 'none';
+        document.getElementById('captureBtn').style.display = 'none';
+        document.getElementById('retakeBtn').style.display = 'inline-block';
+
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+    }
+
+    function retakePhoto() {
+        document.getElementById('digisignBox').innerHTML = 'Space for Digital Signature (eSign/DSC)';
+        document.getElementById('retakeBtn').style.display = 'none';
+        openCamera();
+    }
+
+    function stopCamera() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
+        const video = document.getElementById('cameraPreview');
+        if (video) {
+            video.style.display = 'none';
+            video.srcObject = null;
+        }
+        const openBtn = document.getElementById('openCameraBtn');
+        const captureBtn = document.getElementById('captureBtn');
+        const retakeBtn = document.getElementById('retakeBtn');
+        if (openBtn) openBtn.style.display = 'inline-block';
+        if (captureBtn) captureBtn.style.display = 'none';
+        if (retakeBtn) retakeBtn.style.display = 'none';
     }
 
     function getDriveScriptUrl() {
