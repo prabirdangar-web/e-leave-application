@@ -467,9 +467,16 @@
             <div style="font-size:12px;color:#475569;margin-bottom:8px;">This opens your phone's camera or your computer's webcam, whichever is available. Position your signature and capture.</div>
             <video id="cameraPreview" autoplay playsinline muted style="width:100%;max-height:220px;background:#000;border-radius:6px;display:none;"></video>
             <canvas id="cameraCanvas" style="display:none;"></canvas>
-            <div style="display:flex;gap:8px;margin-top:8px;">
+
+            <div id="cropWrap" style="display:none;margin-top:8px;">
+                <canvas id="cropDisplayCanvas" style="width:100%;display:block;border-radius:6px;cursor:crosshair;touch-action:none;"></canvas>
+            </div>
+            <div id="cropHint" style="font-size:11px;color:#475569;margin-top:6px;display:none;">Drag on the photo to draw a box around just your signature, then press <strong>Use Selection</strong>. Leave it as-is to use the full photo.</div>
+
+            <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap;">
                 <button type="button" class="btn-print" style="margin-top:0;" id="openCameraBtn" onclick="openCamera()">Open Camera</button>
                 <button type="button" class="btn-print" style="margin-top:0;display:none;background-color:#0f9d58;" id="captureBtn" onclick="capturePhoto()">Capture Photo</button>
+                <button type="button" class="btn-print" style="margin-top:0;display:none;background-color:#0f9d58;" id="useCropBtn" onclick="useCropSelection()">Use Selection</button>
                 <button type="button" class="btn-print" style="margin-top:0;display:none;background-color:#64748b;" id="retakeBtn" onclick="retakePhoto()">Retake</button>
             </div>
             <div style="font-size:11px;color:#dc2626;margin-top:6px;" id="cameraError"></div>
@@ -748,10 +755,6 @@
         canvas.height = video.videoHeight;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        const dataUrl = canvas.toDataURL('image/png');
-
-        const box = document.getElementById('digisignBox');
-        box.innerHTML = `<img src="${dataUrl}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
 
         video.style.display = 'none';
         document.getElementById('captureBtn').style.display = 'none';
@@ -761,10 +764,115 @@
             cameraStream.getTracks().forEach(track => track.stop());
             cameraStream = null;
         }
+
+        openCropUI();
+    }
+
+    // --- Crop step: lets the user drag a box around just the signature before it's used ---
+    let cropSelection = { x: 0, y: 0, w: 0, h: 0 };
+    let cropDragging = false;
+    let cropDragStart = null;
+
+    function openCropUI() {
+        const src = document.getElementById('cameraCanvas');
+        const disp = document.getElementById('cropDisplayCanvas');
+        disp.width = src.width;
+        disp.height = src.height;
+
+        // Default selection is the full photo, so pressing "Use Selection" without dragging still works.
+        cropSelection = { x: 0, y: 0, w: src.width, h: src.height };
+        drawCropOverlay();
+
+        document.getElementById('cropWrap').style.display = 'block';
+        document.getElementById('cropHint').style.display = 'block';
+        document.getElementById('useCropBtn').style.display = 'inline-block';
+    }
+
+    function drawCropOverlay() {
+        const src = document.getElementById('cameraCanvas');
+        const disp = document.getElementById('cropDisplayCanvas');
+        const ctx = disp.getContext('2d');
+        ctx.clearRect(0, 0, disp.width, disp.height);
+        ctx.drawImage(src, 0, 0);
+
+        // Dim the whole photo, then re-reveal only the selected box so it's obvious what will be kept
+        ctx.fillStyle = 'rgba(0,0,0,0.45)';
+        ctx.fillRect(0, 0, disp.width, disp.height);
+        if (cropSelection.w > 0 && cropSelection.h > 0) {
+            ctx.drawImage(src, cropSelection.x, cropSelection.y, cropSelection.w, cropSelection.h,
+                               cropSelection.x, cropSelection.y, cropSelection.w, cropSelection.h);
+            ctx.strokeStyle = '#0f9d58';
+            ctx.lineWidth = Math.max(2, disp.width * 0.004);
+            ctx.strokeRect(cropSelection.x, cropSelection.y, cropSelection.w, cropSelection.h);
+        }
+    }
+
+    function getCropCoords(evt) {
+        const canvas = document.getElementById('cropDisplayCanvas');
+        const rect = canvas.getBoundingClientRect();
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+        const point = evt.touches && evt.touches.length ? evt.touches[0] : evt;
+        return {
+            x: Math.max(0, Math.min(canvas.width, (point.clientX - rect.left) * scaleX)),
+            y: Math.max(0, Math.min(canvas.height, (point.clientY - rect.top) * scaleY))
+        };
+    }
+
+    function cropDragStartHandler(evt) {
+        evt.preventDefault();
+        cropDragging = true;
+        cropDragStart = getCropCoords(evt);
+        cropSelection = { x: cropDragStart.x, y: cropDragStart.y, w: 0, h: 0 };
+        drawCropOverlay();
+    }
+
+    function cropDragMoveHandler(evt) {
+        if (!cropDragging) return;
+        evt.preventDefault();
+        const p = getCropCoords(evt);
+        cropSelection = {
+            x: Math.min(cropDragStart.x, p.x),
+            y: Math.min(cropDragStart.y, p.y),
+            w: Math.abs(p.x - cropDragStart.x),
+            h: Math.abs(p.y - cropDragStart.y)
+        };
+        drawCropOverlay();
+    }
+
+    function cropDragEndHandler(evt) {
+        if (!cropDragging) return;
+        cropDragging = false;
+        // Ignore accidental tiny drags/taps and fall back to the full photo
+        if (cropSelection.w < 15 || cropSelection.h < 15) {
+            const disp = document.getElementById('cropDisplayCanvas');
+            cropSelection = { x: 0, y: 0, w: disp.width, h: disp.height };
+            drawCropOverlay();
+        }
+    }
+
+    function useCropSelection() {
+        const src = document.getElementById('cameraCanvas');
+        const out = document.createElement('canvas');
+        out.width = Math.max(1, Math.round(cropSelection.w));
+        out.height = Math.max(1, Math.round(cropSelection.h));
+        const ctx = out.getContext('2d');
+        ctx.drawImage(src, cropSelection.x, cropSelection.y, cropSelection.w, cropSelection.h,
+                           0, 0, out.width, out.height);
+        const dataUrl = out.toDataURL('image/png');
+
+        document.getElementById('digisignBox').innerHTML = `<img src="${dataUrl}" style="max-width:100%;max-height:100%;object-fit:contain;">`;
+
+        document.getElementById('cropWrap').style.display = 'none';
+        document.getElementById('cropHint').style.display = 'none';
+        document.getElementById('useCropBtn').style.display = 'none';
     }
 
     function retakePhoto() {
         document.getElementById('digisignBox').innerHTML = 'Space for Digital Signature (eSign/DSC)';
+        document.getElementById('cropWrap').style.display = 'none';
+        document.getElementById('cropHint').style.display = 'none';
+        document.getElementById('useCropBtn').style.display = 'none';
         document.getElementById('retakeBtn').style.display = 'none';
         openCamera();
     }
@@ -782,9 +890,15 @@
         const openBtn = document.getElementById('openCameraBtn');
         const captureBtn = document.getElementById('captureBtn');
         const retakeBtn = document.getElementById('retakeBtn');
+        const cropWrap = document.getElementById('cropWrap');
+        const cropHint = document.getElementById('cropHint');
+        const useCropBtn = document.getElementById('useCropBtn');
         if (openBtn) openBtn.style.display = 'inline-block';
         if (captureBtn) captureBtn.style.display = 'none';
         if (retakeBtn) retakeBtn.style.display = 'none';
+        if (cropWrap) cropWrap.style.display = 'none';
+        if (cropHint) cropHint.style.display = 'none';
+        if (useCropBtn) useCropBtn.style.display = 'none';
     }
 
     function getDriveScriptUrl() {
@@ -886,6 +1000,16 @@
         document.getElementById('appDate').value = today;
         document.getElementById('fromDate').value = today;
         updateApplication();
+
+        const cropCanvas = document.getElementById('cropDisplayCanvas');
+        if (cropCanvas) {
+            cropCanvas.addEventListener('mousedown', cropDragStartHandler);
+            cropCanvas.addEventListener('mousemove', cropDragMoveHandler);
+            window.addEventListener('mouseup', cropDragEndHandler);
+            cropCanvas.addEventListener('touchstart', cropDragStartHandler, { passive: false });
+            cropCanvas.addEventListener('touchmove', cropDragMoveHandler, { passive: false });
+            cropCanvas.addEventListener('touchend', cropDragEndHandler);
+        }
     }
 </script>
 
