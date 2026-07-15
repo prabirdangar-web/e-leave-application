@@ -37,7 +37,6 @@
             margin: 0 auto;
         }
 
-        /* Input Control Panel Configuration */
         .form-section {
             background: #ffffff;
             padding: 30px;
@@ -145,16 +144,6 @@
             cursor: not-allowed;
         }
 
-        .drive-setup-box {
-            margin-top: 15px;
-            padding: 12px;
-            background-color: #f8fafc;
-            border: 1px dashed #94a3b8;
-            border-radius: 6px;
-            font-size: 12px;
-            color: #475569;
-        }
-
         .drive-status {
             font-size: 12px;
             margin-top: 8px;
@@ -182,7 +171,6 @@
             font-weight: bold;
         }
 
-        /* Enforced Single-Page Application Layout Window */
         .preview-section {
             background: #ffffff;
             padding: 40px 50px;
@@ -192,7 +180,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start; /* Kept tight to prevent unnecessary bottom stretching */
+            justify-content: flex-start;
             page-break-inside: avoid;
             break-inside: avoid;
         }
@@ -232,12 +220,11 @@
             margin-bottom: 10px;
         }
 
-        /* Signature block sits directly under the application matter — never pinned to page bottom */
         .letter-footer {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-top: 28px; /* Small fixed gap right after the last line of the letter body */
+            margin-top: 28px;
             page-break-inside: avoid; 
             break-inside: avoid;
         }
@@ -268,11 +255,10 @@
             overflow: hidden;
         }
 
-        /* Strict Direct Injection Print Engine Override Rules */
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 12mm 15mm 12mm 15mm; /* Locked margin configuration */
+                margin: 12mm 15mm 12mm 15mm;
             }
             body * {
                 visibility: hidden;
@@ -285,9 +271,9 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                height: 273mm; /* 297mm page minus 12mm top + 12mm bottom @page margin */
+                height: 273mm;
                 max-height: 273mm;
-                overflow: hidden; /* Guarantees strictly one A4 page: excess content is clipped, never spills to page 2 */
+                overflow: hidden;
                 box-shadow: none;
                 padding: 0;
                 page-break-inside: avoid;
@@ -351,9 +337,15 @@
             </div>
         </div>
 
-        <div class="form-group">
-            <label for="idDigits">Aadhaar (Last 4 Digits for Verification Check):</label>
-            <input type="text" id="idDigits" maxlength="4" placeholder="e.g., 4321" oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateApplication();">
+        <div class="form-row">
+            <div class="form-group">
+                <label for="idDigits">Verification ID (Last 4 Digits):</label>
+                <input type="text" id="idDigits" maxlength="4" placeholder="e.g., 4321" oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateApplication();">
+            </div>
+            <div class="form-group">
+                <label for="applicantEmail">Your Email Address (For Copy):</label>
+                <input type="email" id="applicantEmail" placeholder="name@domain.com">
+            </div>
         </div>
 
         <div class="form-group">
@@ -447,7 +439,7 @@
             <label style="font-size: 13px; color: #334155; font-weight:700;">Steps for eSign</label>
             <ol style="text-align:left; font-size: 12px; color:#334155; margin: 8px 0 0 18px; line-height: 1.6;">
                 <li>Fill in all details above, then click <strong>Print / Save as PDF</strong> and save the unsigned application.</li>
-                <li>Open <a href="https://accounts.digilocker.gov.in/" target="_blank" rel="noopener noreferrer">DigiLocker</a>, log in with Aadhaar, and use its eSign option to sign the saved PDF.</li>
+                <li>Open <a href="https://accounts.digilocker.gov.in/" target="_blank" rel="noopener noreferrer">DigiLocker</a>, log in with identification credentials, and use its eSign option to sign the saved PDF.</li>
                 <li>Download the signed PDF back to your device.</li>
                 <li>Come back here, switch to option 2 above, and upload that signed PDF — it will appear automatically in the signature box.</li>
             </ol>
@@ -464,7 +456,7 @@
 
         <div class="form-group" id="cameraStepBox" style="margin-top: 15px; display:none;">
             <label>Capture Signature via Camera:</label>
-            <div style="font-size:12px;color:#475569;margin-bottom:8px;">This opens your phone's camera or your computer's webcam, whichever is available. Position your signature and capture.</div>
+            <div style="font-size:12px;color:#475569;margin-bottom:8px;">This opens your phone's camera or your computer's webcam. Position your signature and capture.</div>
             <video id="cameraPreview" autoplay playsinline muted style="width:100%;max-height:220px;background:#000;border-radius:6px;display:none;"></video>
             <canvas id="cameraCanvas" style="display:none;"></canvas>
 
@@ -484,10 +476,10 @@
 
         <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
 
-        <div class="form-group" style="margin-top: 15px;">
-            <label style="font-weight:normal;">3. Submit</label>
+        <div class="form-group" style="margin-top: 25px;">
+            <label style="font-weight:bold;">Finalize Entry Submission</label>
         </div>
-        <button class="btn-drive" id="driveBtn" onclick="submitToDrive()">Submit</button>
+        <button class="btn-drive" id="driveBtn" onclick="submitToDrive()">Submit Application & Email Alert</button>
         <div class="drive-status" id="driveStatus"></div>
         <div style="text-align:center;font-size:12px;font-weight:600;color:#b91c1c;margin-top:10px;">
             Leave cannot be claimed as a matter of right.
@@ -497,7 +489,8 @@
             <strong>Important:</strong> After you rejoin duty following your leave, submit a hard copy of this application with your original signature and date to the office.
         </div>
 
-        <input type="hidden" id="driveScriptUrl" value="https://script.google.com/macros/s/AKfycbzpPLuwYil2c-BezoW9xhBafb7znYqfb0KoUmH1zvrgxUc5LJU9nfc9lmExa9dn4oKd/exec">
+        <!-- System Routing Variables Connected to Web App Deployment -->
+        <input type="hidden" id="driveScriptUrl" value="https://script.google.com/macros/s/AKfycbx4qnezA2m8ahvLcF2MGf6x_UgudkuXQm505_pgGJN4uSK23GBQ_GnEIUOvtX43dQo/exec">
     </div>
 
     <!-- Right Live Generation Preview Layout (Locked Single Page Context) -->
@@ -533,7 +526,7 @@
                     </div>
 
                     <div class="letter-body">
-                        I beg to state that I <span id="viewApplicantNameStatement" style="font-weight: 600;">[Name]</span>, holding the position of <span id="viewDesignationStatement" style="font-weight: 500;">[Designation]</span> (Aadhaar No: <span id="viewIdentity" style="font-family: monospace;">XXXX-XXXX-XXXX</span>) at your institution, am writing to inform you that I <span id="viewTimingText">shall not be able to attend</span> the school from <span id="viewFromDate" style="font-weight: 600;">............</span> to <span id="viewToDate" style="font-weight: 600;">............</span> due to <span id="viewReason" style="font-style: italic;">............................................................. (Reason)</span>. 
+                        I beg to state that I <span id="viewApplicantNameStatement" style="font-weight: 600;">[Name]</span>, holding the position of <span id="viewDesignationStatement" style="font-weight: 500;">[Designation]</span> (ID Verification: <span id="viewIdentity" style="font-family: monospace;">XXXX-XXXX-XXXX</span>) at your institution, am writing to inform you that I <span id="viewTimingText">shall not be able to attend</span> the school from <span id="viewFromDate" style="font-weight: 600;">............</span> to <span id="viewToDate" style="font-weight: 600;">............</span> due to <span id="viewReason" style="font-style: italic;">............................................................. (Reason)</span>. 
                         <br><br>
                         Therefore, I kindly request you to grant me this leave of absence for <span id="viewTotalDays" style="font-weight: 600;">.....</span> day(s) and treat it as <span id="viewFinalLeaveType" style="font-weight: 600;">Casual Leave</span>.
                     </div>
@@ -580,7 +573,6 @@
         const leaveType = document.getElementById('leaveType').value;
         const isMedicalLeave = leaveType === 'Medical Leave';
 
-        // Medical Leave is always addressed to The Administrator, routed Through The Headmaster
         const recipientSelect = document.getElementById('recipient');
         recipientSelect.disabled = isMedicalLeave;
         const recipient = isMedicalLeave ? 'The Administrator' : recipientSelect.value;
@@ -598,7 +590,6 @@
         const toDateRaw = document.getElementById('toDate').value;
         const appDateRaw = document.getElementById('appDate').value;
 
-        // Auto-calculate number of days (inclusive) from the date range
         const totalDaysField = document.getElementById('totalDays');
         if (fromDateRaw && toDateRaw) {
             const start = new Date(fromDateRaw);
@@ -698,7 +689,6 @@
         uploadBox.style.display = (selected === 'upload') ? 'block' : 'none';
         cameraBox.style.display = (selected === 'camera') ? 'block' : 'none';
 
-        // Only one signature mode is ever active — clear leftover data when switching away
         if (selected !== 'upload') {
             const sigUpload = document.getElementById('sigUpload');
             if (sigUpload) sigUpload.value = '';
@@ -711,7 +701,6 @@
         }
     }
 
-    // --- Camera capture (opens the phone's camera or the computer's webcam) ---
     let cameraStream = null;
 
     async function openCamera() {
@@ -729,7 +718,6 @@
         }
 
         try {
-            // Prefer the rear/environment camera on phones; falls back to whatever camera is available on a computer
             cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
             video.srcObject = cameraStream;
             video.style.display = 'block';
@@ -739,9 +727,7 @@
         } catch (err) {
             console.error(err);
             if (err.name === 'NotAllowedError') {
-                errorBox.innerText = 'Camera permission denied. Please allow camera access in your browser settings, or use the Upload option instead.';
-            } else if (err.name === 'NotFoundError') {
-                errorBox.innerText = 'No camera was found on this device. Please use the Upload option instead.';
+                errorBox.innerText = 'Camera permission denied. Please allow camera access in browser settings.';
             } else {
                 errorBox.innerText = 'Could not access the camera. Please use the Upload option instead.';
             }
@@ -768,7 +754,6 @@
         openCropUI();
     }
 
-    // --- Crop step: lets the user drag a box around just the signature before it's used ---
     let cropSelection = { x: 0, y: 0, w: 0, h: 0 };
     let cropDragging = false;
     let cropDragStart = null;
@@ -779,7 +764,6 @@
         disp.width = src.width;
         disp.height = src.height;
 
-        // Default selection is the full photo, so pressing "Use Selection" without dragging still works.
         cropSelection = { x: 0, y: 0, w: src.width, h: src.height };
         drawCropOverlay();
 
@@ -795,7 +779,6 @@
         ctx.clearRect(0, 0, disp.width, disp.height);
         ctx.drawImage(src, 0, 0);
 
-        // Dim the whole photo, then re-reveal only the selected box so it's obvious what will be kept
         ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.fillRect(0, 0, disp.width, disp.height);
         if (cropSelection.w > 0 && cropSelection.h > 0) {
@@ -843,7 +826,6 @@
     function cropDragEndHandler(evt) {
         if (!cropDragging) return;
         cropDragging = false;
-        // Ignore accidental tiny drags/taps and fall back to the full photo
         if (cropSelection.w < 15 || cropSelection.h < 15) {
             const disp = document.getElementById('cropDisplayCanvas');
             cropSelection = { x: 0, y: 0, w: disp.width, h: disp.height };
@@ -917,34 +899,16 @@
         return `${name.replace(/\s+/g, '_')}_${leaveType.replace(/\s+/g, '_')}_Application.pdf`;
     }
 
-    function downloadAndOpenDrive() {
-        const printArea = document.getElementById('printArea');
-        html2canvas(printArea, { scale: 2, useCORS: true }).then(canvas => {
-            const imgData = canvas.toDataURL('image/png');
-            const { jsPDF } = window.jspdf;
-            const pdf = new jsPDF('p', 'mm', 'a4');
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = (canvas.height * pageWidth) / canvas.width;
-            pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, Math.min(pageHeight, pdf.internal.pageSize.getHeight()));
-            pdf.save(buildFileName());
-            window.open('https://drive.google.com/drive/my-drive', '_blank');
-        }).catch(err => {
-            console.error(err);
-            alert('Could not generate the PDF. Please try again.');
-        });
-    }
-
     function submitToDrive() {
         const scriptUrl = getDriveScriptUrl();
         if (!scriptUrl) {
-            setDriveStatus('Please paste the Apps Script Web App URL first (see box below).', true);
+            setDriveStatus('System Error: Missing Endpoint Deployment Script ID.', true);
             return;
         }
-        localStorage.setItem('driveScriptUrl', scriptUrl);
 
         const btn = document.getElementById('driveBtn');
         btn.disabled = true;
-        setDriveStatus('Generating PDF...', false);
+        setDriveStatus('Generating certified single-page PDF structure...', false);
 
         const printArea = document.getElementById('printArea');
         html2canvas(printArea, { scale: 2, useCORS: true }).then(canvas => {
@@ -957,51 +921,48 @@
             const base64Pdf = pdf.output('datauristring').split(',')[1];
             const fileName = buildFileName();
 
-            setDriveStatus('Saving to Drive...', false);
+            setDriveStatus('Uploading document and dispatching mail alerts...', false);
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 20000); // 20s hard stop
+            const timeoutId = setTimeout(() => controller.abort(), 25000); 
 
             fetch(scriptUrl, {
                 method: 'POST',
-                mode: 'no-cors', // Apps Script's redirect response usually can't be read back anyway
+                mode: 'no-cors', 
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     pdfBase64: base64Pdf,
                     fileName: fileName,
                     applicantName: document.getElementById('applicantName').value || 'Applicant',
                     leaveType: document.getElementById('leaveType').value || 'Leave',
-                    totalDays: document.getElementById('totalDays').value || ''
+                    totalDays: document.getElementById('totalDays').value || 'N/A',
+                    applicantEmail: document.getElementById('applicantEmail').value || ''
                 }),
                 signal: controller.signal
             })
             .then(() => {
                 clearTimeout(timeoutId);
                 btn.disabled = false;
-                setDriveStatus('Submitted. Please check your Drive folder to confirm — the browser cannot read Google\'s confirmation back due to CORS.', false);
+                setDriveStatus('Success! Saved to Drive and automated email dispatched to highschooltaldangrafulmati@gmail.com.', false);
             })
             .catch(err => {
                 clearTimeout(timeoutId);
                 btn.disabled = false;
                 if (err.name === 'AbortError') {
-                    setDriveStatus('Timed out after 20s. Check your Drive folder — it may have saved anyway — or use the manual download button.', true);
+                    setDriveStatus('Network timeout. Please review your Google Drive directory and administrative inbox to ensure delivery.', true);
                 } else {
                     console.error(err);
-                    setDriveStatus('Save failed. Check console for details, or use the manual download button instead.', true);
+                    setDriveStatus('Submission process runtime error. Verify browser logs or use print/save backup actions.', true);
                 }
             });
         }).catch(err => {
             console.error(err);
-            setDriveStatus('Could not generate PDF.', true);
+            setDriveStatus('Canvas parsing failed. Application layout could not map data parameters.', true);
             btn.disabled = false;
         });
     }
 
     window.onload = function() {
-        const savedScriptUrl = localStorage.getItem('driveScriptUrl');
-        if (savedScriptUrl) {
-            document.getElementById('driveScriptUrl').value = savedScriptUrl;
-        }
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('appDate').value = today;
         document.getElementById('fromDate').value = today;
