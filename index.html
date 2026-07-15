@@ -966,7 +966,13 @@
                 method: 'POST',
                 mode: 'no-cors', // Apps Script's redirect response usually can't be read back anyway
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-                body: JSON.stringify({ pdfBase64: base64Pdf, fileName: fileName }),
+                body: JSON.stringify({
+                    pdfBase64: base64Pdf,
+                    fileName: fileName,
+                    applicantName: document.getElementById('applicantName').value || 'Applicant',
+                    leaveType: document.getElementById('leaveType').value || 'Leave',
+                    totalDays: document.getElementById('totalDays').value || ''
+                }),
                 signal: controller.signal
             })
             .then(() => {
