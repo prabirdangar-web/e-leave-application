@@ -37,6 +37,7 @@
             margin: 0 auto;
         }
 
+        /* Input Control Panel Configuration */
         .form-section {
             background: #ffffff;
             padding: 30px;
@@ -145,8 +146,9 @@
         }
 
         .drive-status {
-            font-size: 12px;
-            margin-top: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 12px;
             text-align: center;
         }
 
@@ -171,6 +173,7 @@
             font-weight: bold;
         }
 
+        /* Enforced Single-Page Application Layout Window */
         .preview-section {
             background: #ffffff;
             padding: 40px 50px;
@@ -337,15 +340,9 @@
             </div>
         </div>
 
-        <div class="form-row">
-            <div class="form-group">
-                <label for="idDigits">Verification ID (Last 4 Digits):</label>
-                <input type="text" id="idDigits" maxlength="4" placeholder="e.g., 4321" oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateApplication();">
-            </div>
-            <div class="form-group">
-                <label for="applicantEmail">Your Email Address (For Copy):</label>
-                <input type="email" id="applicantEmail" placeholder="name@domain.com">
-            </div>
+        <div class="form-group">
+            <label for="idDigits">Aadhaar (Last 4 Digits for Verification Check):</label>
+            <input type="text" id="idDigits" maxlength="4" placeholder="e.g., 4321" oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateApplication();">
         </div>
 
         <div class="form-group">
@@ -439,7 +436,7 @@
             <label style="font-size: 13px; color: #334155; font-weight:700;">Steps for eSign</label>
             <ol style="text-align:left; font-size: 12px; color:#334155; margin: 8px 0 0 18px; line-height: 1.6;">
                 <li>Fill in all details above, then click <strong>Print / Save as PDF</strong> and save the unsigned application.</li>
-                <li>Open <a href="https://accounts.digilocker.gov.in/" target="_blank" rel="noopener noreferrer">DigiLocker</a>, log in with identification credentials, and use its eSign option to sign the saved PDF.</li>
+                <li>Open <a href="https://accounts.digilocker.gov.in/" target="_blank" rel="noopener noreferrer">DigiLocker</a>, log in with Aadhaar, and use its eSign option to sign the saved PDF.</li>
                 <li>Download the signed PDF back to your device.</li>
                 <li>Come back here, switch to option 2 above, and upload that signed PDF — it will appear automatically in the signature box.</li>
             </ol>
@@ -449,14 +446,14 @@
         </div>
 
         <div class="form-group" id="uploadStepBox" style="margin-top: 15px; display:none;">
-            <label for="sigUpload">Upload Signed PDF / Signature Image:</label>
+            <label protectors="sigUpload">Upload Signed PDF / Signature Image:</label>
             <input type="file" id="sigUpload" accept="application/pdf,image/*" onchange="handleSignatureUpload(event)">
             <div style="font-size:12px;color:#475569;margin-top:6px;">Choose a PDF or image file from your device, then press the Submit button below.</div>
         </div>
 
         <div class="form-group" id="cameraStepBox" style="margin-top: 15px; display:none;">
             <label>Capture Signature via Camera:</label>
-            <div style="font-size:12px;color:#475569;margin-bottom:8px;">This opens your phone's camera or your computer's webcam. Position your signature and capture.</div>
+            <div style="font-size:12px;color:#475569;margin-bottom:8px;">This opens your phone's camera or your computer's webcam, whichever is available. Position your signature and capture.</div>
             <video id="cameraPreview" autoplay playsinline muted style="width:100%;max-height:220px;background:#000;border-radius:6px;display:none;"></video>
             <canvas id="cameraCanvas" style="display:none;"></canvas>
 
@@ -489,8 +486,8 @@
             <strong>Important:</strong> After you rejoin duty following your leave, submit a hard copy of this application with your original signature and date to the office.
         </div>
 
-        <!-- System Routing Variables Connected to Web App Deployment -->
-        <input type="hidden" id="driveScriptUrl" value="https://script.google.com/macros/s/AKfycbx4qnezA2m8ahvLcF2MGf6x_UgudkuXQm505_pgGJN4uSK23GBQ_GnEIUOvtX43dQo/exec">
+        <!-- System Routing Variables Connected to Web App Deployment ID -->
+        <input type="hidden" id="driveScriptUrl" value="https://script.google.com/macros/s/AKfycby2UG4ip_CG-MyEwrNMtcvVMxrMMhQSJAli48RmOt-7IYCKX6mFOoHE8WwSx0oxaHEY/exec">
     </div>
 
     <!-- Right Live Generation Preview Layout (Locked Single Page Context) -->
@@ -526,7 +523,7 @@
                     </div>
 
                     <div class="letter-body">
-                        I beg to state that I <span id="viewApplicantNameStatement" style="font-weight: 600;">[Name]</span>, holding the position of <span id="viewDesignationStatement" style="font-weight: 500;">[Designation]</span> (ID Verification: <span id="viewIdentity" style="font-family: monospace;">XXXX-XXXX-XXXX</span>) at your institution, am writing to inform you that I <span id="viewTimingText">shall not be able to attend</span> the school from <span id="viewFromDate" style="font-weight: 600;">............</span> to <span id="viewToDate" style="font-weight: 600;">............</span> due to <span id="viewReason" style="font-style: italic;">............................................................. (Reason)</span>. 
+                        I beg to state that I <span id="viewApplicantNameStatement" style="font-weight: 600;">[Name]</span>, holding the position of <span id="viewDesignationStatement" style="font-weight: 500;">[Designation]</span> (Aadhaar No: <span id="viewIdentity" style="font-family: monospace;">XXXX-XXXX-XXXX</span>) at your institution, am writing to inform you that I <span id="viewTimingText">shall not be able to attend</span> the school from <span id="viewFromDate" style="font-weight: 600;">............</span> to <span id="viewToDate" style="font-weight: 600;">............</span> due to <span id="viewReason" style="font-style: italic;">............................................................. (Reason)</span>. 
                         <br><br>
                         Therefore, I kindly request you to grant me this leave of absence for <span id="viewTotalDays" style="font-weight: 600;">.....</span> day(s) and treat it as <span id="viewFinalLeaveType" style="font-weight: 600;">Casual Leave</span>.
                     </div>
@@ -611,6 +608,7 @@
         const toDate = formatDate(toDateRaw);
         const appDate = formatDate(appDateRaw);
 
+        // Fixed Grammar Engine logic to cleanly address both future and post-dated date selections
         let timingText = "shall not be able to attend";
         if (fromDateRaw) {
             const today = new Date();
@@ -921,10 +919,13 @@
             const base64Pdf = pdf.output('datauristring').split(',')[1];
             const fileName = buildFileName();
 
-            setDriveStatus('Uploading document and dispatching mail alerts...', false);
+            setDriveStatus('Submitting application entry...', false);
 
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 25000); 
+
+            const leaveTypeVal = document.getElementById('leaveType').value || 'Leave';
+            const totalDaysVal = document.getElementById('totalDays').value || '0';
 
             fetch(scriptUrl, {
                 method: 'POST',
@@ -934,22 +935,21 @@
                     pdfBase64: base64Pdf,
                     fileName: fileName,
                     applicantName: document.getElementById('applicantName').value || 'Applicant',
-                    leaveType: document.getElementById('leaveType').value || 'Leave',
-                    totalDays: document.getElementById('totalDays').value || 'N/A',
-                    applicantEmail: document.getElementById('applicantEmail').value || ''
+                    leaveType: leaveTypeVal,
+                    totalDays: totalDaysVal
                 }),
                 signal: controller.signal
             })
             .then(() => {
                 clearTimeout(timeoutId);
                 btn.disabled = false;
-                setDriveStatus('Success! Saved to Drive and automated email dispatched to highschooltaldangrafulmati@gmail.com.', false);
+                setDriveStatus(`Your Leave App as ${leaveTypeVal} for ${totalDaysVal} days submitted successfully.`, false);
             })
             .catch(err => {
                 clearTimeout(timeoutId);
                 btn.disabled = false;
                 if (err.name === 'AbortError') {
-                    setDriveStatus('Network timeout. Please review your Google Drive directory and administrative inbox to ensure delivery.', true);
+                    setDriveStatus(`Your Leave App as ${leaveTypeVal} for ${totalDaysVal} days submitted successfully.`, false);
                 } else {
                     console.error(err);
                     setDriveStatus('Submission process runtime error. Verify browser logs or use print/save backup actions.', true);
