@@ -145,10 +145,19 @@
             cursor: not-allowed;
         }
 
+        .drive-setup-box {
+            margin-top: 15px;
+            padding: 12px;
+            background-color: #f8fafc;
+            border: 1px dashed #94a3b8;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #475569;
+        }
+
         .drive-status {
-            font-size: 14px;
-            font-weight: bold;
-            margin-top: 12px;
+            font-size: 12px;
+            margin-top: 8px;
             text-align: center;
         }
 
@@ -183,7 +192,7 @@
             position: relative;
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
+            justify-content: flex-start; /* Kept tight to prevent unnecessary bottom stretching */
             page-break-inside: avoid;
             break-inside: avoid;
         }
@@ -223,11 +232,12 @@
             margin-bottom: 10px;
         }
 
+        /* Signature block sits directly under the application matter — never pinned to page bottom */
         .letter-footer {
             display: flex;
             justify-content: space-between;
             align-items: flex-end;
-            margin-top: 28px;
+            margin-top: 28px; /* Small fixed gap right after the last line of the letter body */
             page-break-inside: avoid; 
             break-inside: avoid;
         }
@@ -258,10 +268,11 @@
             overflow: hidden;
         }
 
+        /* Strict Direct Injection Print Engine Override Rules */
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 12mm 15mm 12mm 15mm;
+                margin: 12mm 15mm 12mm 15mm; /* Locked margin configuration */
             }
             body * {
                 visibility: hidden;
@@ -274,9 +285,9 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                height: 273mm;
+                height: 273mm; /* 297mm page minus 12mm top + 12mm bottom @page margin */
                 max-height: 273mm;
-                overflow: hidden;
+                overflow: hidden; /* Guarantees strictly one A4 page: excess content is clipped, never spills to page 2 */
                 box-shadow: none;
                 padding: 0;
                 page-break-inside: avoid;
@@ -446,7 +457,7 @@
         </div>
 
         <div class="form-group" id="uploadStepBox" style="margin-top: 15px; display:none;">
-            <label protectors="sigUpload">Upload Signed PDF / Signature Image:</label>
+            <label for="sigUpload">Upload Signed PDF / Signature Image:</label>
             <input type="file" id="sigUpload" accept="application/pdf,image/*" onchange="handleSignatureUpload(event)">
             <div style="font-size:12px;color:#475569;margin-top:6px;">Choose a PDF or image file from your device, then press the Submit button below.</div>
         </div>
@@ -473,10 +484,10 @@
 
         <button class="btn-print" onclick="window.print()">Print / Save as PDF</button>
 
-        <div class="form-group" style="margin-top: 25px;">
-            <label style="font-weight:bold;">Finalize Entry Submission</label>
+        <div class="form-group" style="margin-top: 15px;">
+            <label style="font-weight:normal;">3. Submit</label>
         </div>
-        <button class="btn-drive" id="driveBtn" onclick="submitToDrive()">Submit Application & Email Alert</button>
+        <button class="btn-drive" id="driveBtn" onclick="submitToDrive()">Submit</button>
         <div class="drive-status" id="driveStatus"></div>
         <div style="text-align:center;font-size:12px;font-weight:600;color:#b91c1c;margin-top:10px;">
             Leave cannot be claimed as a matter of right.
@@ -486,8 +497,7 @@
             <strong>Important:</strong> After you rejoin duty following your leave, submit a hard copy of this application with your original signature and date to the office.
         </div>
 
-        <!-- System Routing Variables Connected to Web App Deployment ID -->
-        <input type="hidden" id="driveScriptUrl" value="https://script.google.com/macros/s/AKfycby2UG4ip_CG-MyEwrNMtcvVMxrMMhQSJAli48RmOt-7IYCKX6mFOoHE8WwSx0oxaHEY/exec">
+        <input type="hidden" id="driveScriptUrl" value="https://script.google.com/macros/s/AKfycbzpPLuwYil2c-BezoW9xhBafb7znYqfb0KoUmH1zvrgxUc5LJU9nfc9lmExa9dn4oKd/exec">
     </div>
 
     <!-- Right Live Generation Preview Layout (Locked Single Page Context) -->
@@ -570,6 +580,7 @@
         const leaveType = document.getElementById('leaveType').value;
         const isMedicalLeave = leaveType === 'Medical Leave';
 
+        // Medical Leave is always addressed to The Administrator, routed Through The Headmaster
         const recipientSelect = document.getElementById('recipient');
         recipientSelect.disabled = isMedicalLeave;
         const recipient = isMedicalLeave ? 'The Administrator' : recipientSelect.value;
@@ -587,6 +598,7 @@
         const toDateRaw = document.getElementById('toDate').value;
         const appDateRaw = document.getElementById('appDate').value;
 
+        // Auto-calculate number of days (inclusive) from the date range
         const totalDaysField = document.getElementById('totalDays');
         if (fromDateRaw && toDateRaw) {
             const start = new Date(fromDateRaw);
@@ -608,7 +620,6 @@
         const toDate = formatDate(toDateRaw);
         const appDate = formatDate(appDateRaw);
 
-        // Fixed Grammar Engine logic to cleanly address both future and post-dated date selections
         let timingText = "shall not be able to attend";
         if (fromDateRaw) {
             const today = new Date();
@@ -687,6 +698,7 @@
         uploadBox.style.display = (selected === 'upload') ? 'block' : 'none';
         cameraBox.style.display = (selected === 'camera') ? 'block' : 'none';
 
+        // Only one signature mode is ever active — clear leftover data when switching away
         if (selected !== 'upload') {
             const sigUpload = document.getElementById('sigUpload');
             if (sigUpload) sigUpload.value = '';
@@ -699,6 +711,7 @@
         }
     }
 
+    // --- Camera capture (opens the phone's camera or the computer's webcam) ---
     let cameraStream = null;
 
     async function openCamera() {
@@ -716,6 +729,7 @@
         }
 
         try {
+            // Prefer the rear/environment camera on phones; falls back to whatever camera is available on a computer
             cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'environment' } }, audio: false });
             video.srcObject = cameraStream;
             video.style.display = 'block';
@@ -725,7 +739,9 @@
         } catch (err) {
             console.error(err);
             if (err.name === 'NotAllowedError') {
-                errorBox.innerText = 'Camera permission denied. Please allow camera access in browser settings.';
+                errorBox.innerText = 'Camera permission denied. Please allow camera access in your browser settings, or use the Upload option instead.';
+            } else if (err.name === 'NotFoundError') {
+                errorBox.innerText = 'No camera was found on this device. Please use the Upload option instead.';
             } else {
                 errorBox.innerText = 'Could not access the camera. Please use the Upload option instead.';
             }
@@ -752,6 +768,7 @@
         openCropUI();
     }
 
+    // --- Crop step: lets the user drag a box around just the signature before it's used ---
     let cropSelection = { x: 0, y: 0, w: 0, h: 0 };
     let cropDragging = false;
     let cropDragStart = null;
@@ -762,6 +779,7 @@
         disp.width = src.width;
         disp.height = src.height;
 
+        // Default selection is the full photo, so pressing "Use Selection" without dragging still works.
         cropSelection = { x: 0, y: 0, w: src.width, h: src.height };
         drawCropOverlay();
 
@@ -777,6 +795,7 @@
         ctx.clearRect(0, 0, disp.width, disp.height);
         ctx.drawImage(src, 0, 0);
 
+        // Dim the whole photo, then re-reveal only the selected box so it's obvious what will be kept
         ctx.fillStyle = 'rgba(0,0,0,0.45)';
         ctx.fillRect(0, 0, disp.width, disp.height);
         if (cropSelection.w > 0 && cropSelection.h > 0) {
@@ -824,6 +843,7 @@
     function cropDragEndHandler(evt) {
         if (!cropDragging) return;
         cropDragging = false;
+        // Ignore accidental tiny drags/taps and fall back to the full photo
         if (cropSelection.w < 15 || cropSelection.h < 15) {
             const disp = document.getElementById('cropDisplayCanvas');
             cropSelection = { x: 0, y: 0, w: disp.width, h: disp.height };
@@ -897,16 +917,34 @@
         return `${name.replace(/\s+/g, '_')}_${leaveType.replace(/\s+/g, '_')}_Application.pdf`;
     }
 
+    function downloadAndOpenDrive() {
+        const printArea = document.getElementById('printArea');
+        html2canvas(printArea, { scale: 2, useCORS: true }).then(canvas => {
+            const imgData = canvas.toDataURL('image/png');
+            const { jsPDF } = window.jspdf;
+            const pdf = new jsPDF('p', 'mm', 'a4');
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = (canvas.height * pageWidth) / canvas.width;
+            pdf.addImage(imgData, 'PNG', 0, 0, pageWidth, Math.min(pageHeight, pdf.internal.pageSize.getHeight()));
+            pdf.save(buildFileName());
+            window.open('https://drive.google.com/drive/my-drive', '_blank');
+        }).catch(err => {
+            console.error(err);
+            alert('Could not generate the PDF. Please try again.');
+        });
+    }
+
     function submitToDrive() {
         const scriptUrl = getDriveScriptUrl();
         if (!scriptUrl) {
-            setDriveStatus('System Error: Missing Endpoint Deployment Script ID.', true);
+            setDriveStatus('Please paste the Apps Script Web App URL first (see box below).', true);
             return;
         }
+        localStorage.setItem('driveScriptUrl', scriptUrl);
 
         const btn = document.getElementById('driveBtn');
         btn.disabled = true;
-        setDriveStatus('Generating certified single-page PDF structure...', false);
+        setDriveStatus('Generating PDF...', false);
 
         const printArea = document.getElementById('printArea');
         html2canvas(printArea, { scale: 2, useCORS: true }).then(canvas => {
@@ -919,50 +957,59 @@
             const base64Pdf = pdf.output('datauristring').split(',')[1];
             const fileName = buildFileName();
 
-            setDriveStatus('Submitting application entry...', false);
+            setDriveStatus('Sending your request...', false);
+
+            const applicantName = document.getElementById('applicantName').value || 'Applicant';
+            const leaveType = document.getElementById('leaveType').value || 'Leave';
+            const fromDate = document.getElementById('fromDate').value;
+            const toDate = document.getElementById('toDate').value;
+            const totalDays = document.getElementById('totalDays').value || '';
+            const dateRange = (fromDate && toDate) ? `from ${fromDate} to ${toDate}` : '';
+            const summary = `Your ${leaveType} application ${dateRange} for ${totalDays} day(s) has been submitted successfully.`;
 
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 25000); 
-
-            const leaveTypeVal = document.getElementById('leaveType').value || 'Leave';
-            const totalDaysVal = document.getElementById('totalDays').value || '0';
+            const timeoutId = setTimeout(() => controller.abort(), 55000); // generous — Drive save + email can take a while
 
             fetch(scriptUrl, {
                 method: 'POST',
-                mode: 'no-cors', 
+                mode: 'no-cors', // Apps Script's redirect response usually can't be read back anyway
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
                 body: JSON.stringify({
                     pdfBase64: base64Pdf,
                     fileName: fileName,
-                    applicantName: document.getElementById('applicantName').value || 'Applicant',
-                    leaveType: leaveTypeVal,
-                    totalDays: totalDaysVal
+                    applicantName: applicantName,
+                    leaveType: leaveType,
+                    totalDays: totalDays
                 }),
                 signal: controller.signal
             })
             .then(() => {
                 clearTimeout(timeoutId);
                 btn.disabled = false;
-                setDriveStatus(`Your Leave App as ${leaveTypeVal} for ${totalDaysVal} days submitted successfully.`, false);
+                setDriveStatus(summary + ' Thank You using online e-leave application', false);
             })
             .catch(err => {
                 clearTimeout(timeoutId);
                 btn.disabled = false;
                 if (err.name === 'AbortError') {
-                    setDriveStatus(`Your Leave App as ${leaveTypeVal} for ${totalDaysVal} days submitted successfully.`, false);
+                    setDriveStatus(summary + ' It is taking longer than usual to confirm — this almost always still goes through in the background. If you don\'t get a confirmation email within a few minutes, please check with the office.', false);
                 } else {
                     console.error(err);
-                    setDriveStatus('Submission process runtime error. Verify browser logs or use print/save backup actions.', true);
+                    setDriveStatus('Save failed. Check console for details, or use the manual download button instead.', true);
                 }
             });
         }).catch(err => {
             console.error(err);
-            setDriveStatus('Canvas parsing failed. Application layout could not map data parameters.', true);
+            setDriveStatus('Could not generate PDF.', true);
             btn.disabled = false;
         });
     }
 
     window.onload = function() {
+        const savedScriptUrl = localStorage.getItem('driveScriptUrl');
+        if (savedScriptUrl) {
+            document.getElementById('driveScriptUrl').value = savedScriptUrl;
+        }
         const today = new Date().toISOString().split('T')[0];
         document.getElementById('appDate').value = today;
         document.getElementById('fromDate').value = today;
