@@ -379,6 +379,11 @@
             <div style="margin-top:8px;">A similar certificate may be necessary when a teacher or a non-teaching employee is declared fit to rejoin his duties.</div>
         </div>
 
+        <div id="clRulesDashboard" style="display:none;margin-top:6px;margin-bottom:18px;padding:14px;background-color:#fef2f2;border:1px dashed #dc2626;border-radius:6px;font-size:12px;color:#7f1d1d;line-height:1.6;">
+            <strong style="display:block;margin-bottom:6px;font-size:13px;">Commuted Leave Rule</strong>
+            <div>Commuted Leave is debited against Half Pay Leave (HPL) at <strong>double</strong> the number of days availed. For <span id="clDaysEcho">.....</span> day(s) of Commuted Leave, <strong id="clHplEcho">.....</strong> day(s) of HPL will be debited from your account, subject to your HPL balance and a Medical Certificate where required.</div>
+        </div>
+
         <div class="form-row">
             <div class="form-group">
                 <label for="fromDate">From Date:</label>
@@ -409,24 +414,71 @@
                     <option value="urgent personal work">Urgent personal work</option>
                     <option value="attending a family function">Attending a family function</option>
                     <option value="domestic emergency">Domestic emergency</option>
+                    <option value="attending a wedding in the family">Attending a wedding in the family</option>
+                    <option value="attending a religious ceremony">Attending a religious ceremony</option>
+                    <option value="personal work at the bank / government office">Personal work at the bank / government office</option>
+                    <option value="child's school-related work">Child's school-related work</option>
+                    <option value="sudden domestic problem">Sudden domestic problem</option>
+                    <option value="attending a funeral / bereavement in the family">Attending a funeral / bereavement in the family</option>
+                    <option value="house shifting">House shifting</option>
                 </optgroup>
                 <optgroup label="Medical Leave">
                     <option value="sudden illness">Sudden illness</option>
                     <option value="medical treatment and rest as advised by the physician">Medical treatment / doctor's advice</option>
                     <option value="hospitalization">Hospitalization</option>
+                    <option value="fever and viral infection">Fever and viral infection</option>
+                    <option value="post-surgery recovery and rest">Post-surgery recovery and rest</option>
+                    <option value="chronic illness requiring rest">Chronic illness requiring rest</option>
+                    <option value="dental treatment">Dental treatment</option>
+                    <option value="eye treatment / surgery">Eye treatment / surgery</option>
+                    <option value="orthopedic treatment / injury">Orthopedic treatment / injury</option>
+                    <option value="prescribed bed rest">Prescribed bed rest</option>
                 </optgroup>
                 <optgroup label="Commuted Leave">
                     <option value="medical grounds requiring commuted leave against half pay leave">Medical grounds (against Half Pay Leave)</option>
+                    <option value="continued medical treatment beyond sanctioned medical leave">Continued medical treatment beyond sanctioned Medical Leave</option>
+                    <option value="prolonged illness requiring extended rest against HPL">Prolonged illness requiring extended rest (against HPL)</option>
+                    <option value="post-hospitalization recuperation against HPL">Post-hospitalization recuperation (against HPL)</option>
+                    <option value="specialist-advised extended rest against HPL">Specialist-advised extended rest (against HPL)</option>
                 </optgroup>
                 <optgroup label="Earned Leave">
                     <option value="personal and family matters requiring extended absence">Personal / family matters (extended absence)</option>
                     <option value="travel outside headquarters">Travel outside headquarters</option>
+                    <option value="pilgrimage / religious tour">Pilgrimage / religious tour</option>
+                    <option value="attending to a family member's illness">Attending to a family member's illness</option>
+                    <option value="higher education / examination purposes">Higher education / examination purposes</option>
+                    <option value="visiting native place">Visiting native place</option>
+                    <option value="settling family property / legal matters">Settling family property / legal matters</option>
+                    <option value="long vacation trip">Long vacation trip</option>
                 </optgroup>
                 <optgroup label="Child Care Leave">
                     <option value="care of minor child">Care of minor child</option>
+                    <option value="care of a sick child">Care of a sick child</option>
+                    <option value="child's examination / school admission work">Child's examination / school admission work</option>
+                    <option value="child's medical treatment / hospitalization">Child's medical treatment / hospitalization</option>
                 </optgroup>
                 <optgroup label="Paternity Leave">
                     <option value="birth of child and to attend to my spouse">Birth of child / attend to spouse</option>
+                    <option value="attending to spouse during post-delivery recovery">Attending to spouse during post-delivery recovery</option>
+                </optgroup>
+                <optgroup label="Other Common Reasons">
+                    <option value="attending official duty / training at another location">Attending official duty / training elsewhere</option>
+                    <option value="appearing for a departmental examination">Appearing for a departmental examination</option>
+                    <option value="attending court proceedings">Attending court proceedings</option>
+                    <option value="natural calamity affecting travel to school">Natural calamity affecting travel to school</option>
+                    <option value="election / government duty">Election / government duty</option>
+                    <option value="vaccination / health check-up">Vaccination / health check-up</option>
+                    <option value="renewal of important personal documents">Renewal of important personal documents</option>
+                    <option value="attending a parent's medical emergency">Attending a parent's medical emergency</option>
+                    <option value="relocation due to spouse's transfer">Relocation due to spouse's transfer</option>
+                    <option value="participation in a sports / cultural event">Participation in a sports / cultural event</option>
+                    <option value="attending a training workshop / seminar">Attending a training workshop / seminar</option>
+                    <option value="quarantine / infectious disease precaution">Quarantine / infectious disease precaution</option>
+                    <option value="road / rail disruption preventing travel">Road / rail disruption preventing travel</option>
+                    <option value="personal financial / legal matter">Personal financial / legal matter</option>
+                    <option value="attending a family member's wedding out of town">Attending a family member's wedding out of town</option>
+                    <option value="maternity-related check-up / procedure">Maternity-related check-up / procedure</option>
+                    <option value="bereavement leave for a close relative">Bereavement leave for a close relative</option>
                 </optgroup>
                 <option value="Others">Others (specify manually)</option>
             </select>
@@ -535,7 +587,7 @@
                     <div class="letter-body">
                         I beg to state that I <span id="viewApplicantNameStatement" style="font-weight: 600;">[Name]</span>, holding the position of <span id="viewDesignationStatement" style="font-weight: 500;">[Designation]</span> (Aadhaar No: <span id="viewIdentity" style="font-family: monospace;">XXXX-XXXX-XXXX</span>) at your institution, am writing to inform you that I <span id="viewTimingText">shall not be able to attend</span> the school from <span id="viewFromDate" style="font-weight: 600;">............</span> to <span id="viewToDate" style="font-weight: 600;">............</span> due to <span id="viewReason" style="font-style: italic;">............................................................. (Reason)</span>. 
                         <br><br>
-                        Therefore, I kindly request you to grant me this leave of absence for <span id="viewTotalDays" style="font-weight: 600;">.....</span> day(s) and treat it as <span id="viewFinalLeaveType" style="font-weight: 600;">Casual Leave</span>.
+                        Therefore, I kindly request you to grant me this leave of absence for <span id="viewTotalDays" style="font-weight: 600;">.....</span> day(s) and treat it as <span id="viewFinalLeaveType" style="font-weight: 600;">Casual Leave</span><span id="viewHplSuffix" style="font-weight: 600;display:none;"></span>.
                     </div>
                 </div>
             </div>
@@ -579,6 +631,7 @@
         const designation = (designationSelect === 'Others' ? document.getElementById('designationOther').value : designationSelect) || '[Designation]';
         const leaveType = document.getElementById('leaveType').value;
         const isMedicalLeave = leaveType === 'Medical Leave';
+        const isCommutedLeave = leaveType === 'Commuted Leave';
 
         // Medical Leave is always addressed to The Administrator, routed Through The Headmaster
         const recipientSelect = document.getElementById('recipient');
@@ -587,6 +640,7 @@
         document.getElementById('mlRoutingNote').style.display = isMedicalLeave ? 'block' : 'none';
         document.getElementById('viewThroughBlock').style.display = isMedicalLeave ? 'inline' : 'none';
         document.getElementById('mlRulesDashboard').style.display = isMedicalLeave ? 'block' : 'none';
+        document.getElementById('clRulesDashboard').style.display = isCommutedLeave ? 'block' : 'none';
 
         const reasonSelect = document.getElementById('reason').value;
         const reason = (reasonSelect === 'Others' ? document.getElementById('reasonOther').value : reasonSelect) || '............................................................. (Reason)';
@@ -609,6 +663,23 @@
             totalDaysField.value = '';
         }
         const totalDays = totalDaysField.value || '.....';
+
+        // Commuted Leave is debited against Half Pay Leave (HPL) at double the days availed
+        let hplDays = '.....';
+        if (isCommutedLeave && totalDaysField.value) {
+            hplDays = String(parseInt(totalDaysField.value, 10) * 2);
+        }
+        document.getElementById('clDaysEcho').innerText = totalDays;
+        document.getElementById('clHplEcho').innerText = hplDays;
+
+        const hplSuffixEl = document.getElementById('viewHplSuffix');
+        if (isCommutedLeave) {
+            hplSuffixEl.style.display = 'inline';
+            hplSuffixEl.innerText = ` in lieu of ${hplDays} days HPL`;
+        } else {
+            hplSuffixEl.style.display = 'none';
+            hplSuffixEl.innerText = '';
+        }
         
         const formatDate = (dateStr) => {
             if(!dateStr) return '............';
