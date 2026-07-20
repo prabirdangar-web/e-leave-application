@@ -272,7 +272,7 @@
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 12mm 15mm 12mm 15mm; /* Locked margin configuration */
+                margin: 15mm 25mm 15mm 25mm; /* Left/Right minimum 2.5cm (25mm) as required */
             }
             body * {
                 visibility: hidden;
@@ -285,11 +285,14 @@
                 left: 0;
                 top: 0;
                 width: 100%;
-                height: 273mm; /* 297mm page minus 12mm top + 12mm bottom @page margin */
-                max-height: 273mm;
+                height: 267mm; /* 297mm page minus 15mm top + 15mm bottom @page margin */
+                max-height: 267mm;
                 overflow: hidden; /* Guarantees strictly one A4 page: excess content is clipped, never spills to page 2 */
                 box-shadow: none;
                 padding: 0;
+                display: flex;
+                flex-direction: column;
+                justify-content: center; /* Letter matter sits centered in the middle of the page, not stuck at the top */
                 page-break-inside: avoid;
                 break-inside: avoid;
                 page-break-after: avoid;
@@ -299,6 +302,47 @@
         @media (max-width: 900px) {
             .container {
                 grid-template-columns: 1fr;
+            }
+        }
+
+        @media (max-width: 600px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                gap: 16px;
+            }
+            .form-section {
+                padding: 16px;
+            }
+            .school-header-form h2 {
+                font-size: 18px;
+            }
+            .form-row {
+                grid-template-columns: 1fr; /* Stack side-by-side fields on narrow screens */
+            }
+            input, select, textarea {
+                font-size: 16px; /* Prevents iOS auto-zoom on focus */
+                padding: 12px;
+                min-height: 44px; /* Touch-friendly tap target */
+            }
+            .btn-print, .btn-drive {
+                min-height: 48px;
+                font-size: 15px;
+            }
+            .preview-section {
+                padding: 20px 16px; /* Reduced from 40px 50px so text isn't squeezed on-screen */
+                min-height: auto;
+            }
+            .letter-content {
+                font-size: 14px;
+            }
+            .letter-body {
+                text-indent: 24px;
+            }
+            .digisign-box {
+                width: 160px;
+                height: 60px;
             }
         }
     </style>
