@@ -351,6 +351,13 @@
             </div>
         </div>
 
+        </div>
+
+        <div class="form-group">
+            <label for="applicantEmail">Applicant Email (for confirmation copy):</label>
+            <input type="email" id="applicantEmail" placeholder="e.g. yourname@example.com">
+        </div>
+
         <div class="form-group">
             <label for="idDigits">Aadhaar (Last 4 Digits for Verification Check):</label>
             <input type="text" id="idDigits" maxlength="4" placeholder="e.g., 4321" oninput="this.value = this.value.replace(/[^0-9]/g, ''); updateApplication();">
@@ -1048,6 +1055,7 @@
             setDriveStatus('Sending your request...', false);
 
             const applicantName = document.getElementById('applicantName').value || 'Applicant';
+            const applicantEmail = document.getElementById('applicantEmail').value || '';
             const leaveTypeSelectVal = document.getElementById('leaveType').value;
             const leaveType = (leaveTypeSelectVal === 'Others' ? document.getElementById('leaveTypeOther').value : leaveTypeSelectVal) || 'Leave';
             const fromDate = document.getElementById('fromDate').value;
@@ -1064,6 +1072,7 @@
                     pdfBase64: base64Pdf,
                     fileName: fileName,
                     applicantName: applicantName,
+                    applicantEmail: applicantEmail,
                     leaveType: leaveType,
                     totalDays: totalDays
                 })
