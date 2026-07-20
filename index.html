@@ -358,14 +358,17 @@
 
         <div class="form-group">
             <label for="leaveType">Type of Leave:</label>
-            <select id="leaveType" oninput="updateApplication()">
+            <select id="leaveType" onchange="handleLeaveTypeChange()">
                 <option value="Casual Leave">Casual Leave</option>
                 <option value="Medical Leave">Medical Leave</option>
                 <option value="Commuted Leave">Commuted Leave</option>
                 <option value="Earned Leave">Earned Leave</option>
                 <option value="Child Care Leave">Child Care Leave</option>
+                <option value="Maternity Leave">Maternity Leave</option>
                 <option value="Paternity Leave">Paternity Leave</option>
+                <option value="Others">Others (specify manually)</option>
             </select>
+            <input type="text" id="leaveTypeOther" placeholder="Type leave type" style="margin-top: 8px; display: none;" oninput="updateApplication()">
         </div>
 
         <div id="mlRulesDashboard" style="display:none;margin-top:6px;margin-bottom:18px;padding:14px;background-color:#f0f9ff;border:1px dashed #0284c7;border-radius:6px;font-size:12px;color:#0c4a6e;line-height:1.6;">
@@ -456,6 +459,11 @@
                     <option value="care of a sick child">Care of a sick child</option>
                     <option value="child's examination / school admission work">Child's examination / school admission work</option>
                     <option value="child's medical treatment / hospitalization">Child's medical treatment / hospitalization</option>
+                </optgroup>
+                <optgroup label="Maternity Leave">
+                    <option value="confinement and post-natal care">Confinement (childbirth) and post-natal care</option>
+                    <option value="pre-natal care and rest as advised by the physician">Pre-natal care / doctor's advice</option>
+                    <option value="medical complications during pregnancy">Medical complications during pregnancy</option>
                 </optgroup>
                 <optgroup label="Paternity Leave">
                     <option value="birth of child and to attend to my spouse">Birth of child / attend to spouse</option>
@@ -618,6 +626,13 @@
         updateApplication();
     }
 
+    function handleLeaveTypeChange() {
+        const select = document.getElementById('leaveType');
+        const other = document.getElementById('leaveTypeOther');
+        other.style.display = select.value === 'Others' ? 'block' : 'none';
+        updateApplication();
+    }
+
     function handleReasonChange() {
         const select = document.getElementById('reason');
         const other = document.getElementById('reasonOther');
@@ -629,7 +644,8 @@
         const name = document.getElementById('applicantName').value || '[Name]';
         const designationSelect = document.getElementById('designation').value;
         const designation = (designationSelect === 'Others' ? document.getElementById('designationOther').value : designationSelect) || '[Designation]';
-        const leaveType = document.getElementById('leaveType').value;
+        const leaveTypeSelect = document.getElementById('leaveType').value;
+        const leaveType = (leaveTypeSelect === 'Others' ? document.getElementById('leaveTypeOther').value : leaveTypeSelect) || 'Leave';
         const isMedicalLeave = leaveType === 'Medical Leave';
         const isCommutedLeave = leaveType === 'Commuted Leave';
 
@@ -984,7 +1000,8 @@
 
     function buildFileName() {
         const name = document.getElementById('applicantName').value || 'Applicant';
-        const leaveType = document.getElementById('leaveType').value || 'Leave';
+        const leaveTypeSelect = document.getElementById('leaveType').value;
+        const leaveType = (leaveTypeSelect === 'Others' ? document.getElementById('leaveTypeOther').value : leaveTypeSelect) || 'Leave';
         return `${name.replace(/\s+/g, '_')}_${leaveType.replace(/\s+/g, '_')}_Application.pdf`;
     }
 
@@ -1031,17 +1048,15 @@
             setDriveStatus('Sending your request...', false);
 
             const applicantName = document.getElementById('applicantName').value || 'Applicant';
-            const leaveType = document.getElementById('leaveType').value || 'Leave';
+            const leaveTypeSelectVal = document.getElementById('leaveType').value;
+            const leaveType = (leaveTypeSelectVal === 'Others' ? document.getElementById('leaveTypeOther').value : leaveTypeSelectVal) || 'Leave';
             const fromDate = document.getElementById('fromDate').value;
             const toDate = document.getElementById('toDate').value;
             const totalDays = document.getElementById('totalDays').value || '';
             const dateRange = (fromDate && toDate) ? `from ${fromDate} to ${toDate}` : '';
             const summary = `Your ${leaveType} application ${dateRange} for ${totalDays} day(s) has been submitted successfully.`;
 
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 55000); // generous — Drive save + email can take a while
-
-            fetch(scriptUrl, {
+            const fetchPromise = fetch(scriptUrl, {
                 method: 'POST',
                 mode: 'no-cors', // Apps Script's redirect response usually can't be read back anyway
                 headers: { 'Content-Type': 'text/plain;charset=utf-8' },
@@ -1051,18 +1066,21 @@
                     applicantName: applicantName,
                     leaveType: leaveType,
                     totalDays: totalDays
-                }),
-                signal: controller.signal
-            })
+                })
+            });
+
+            const timeoutPromise = new Promise((_, reject) => {
+                setTimeout(() => reject(new Error('TIMEOUT')), 55000); // generous — Drive save + email can take a while
+            });
+
+            Promise.race([fetchPromise, timeoutPromise])
             .then(() => {
-                clearTimeout(timeoutId);
                 btn.disabled = false;
                 setDriveStatus(summary + ' Thank You for using online e-leave application', false);
             })
             .catch(err => {
-                clearTimeout(timeoutId);
                 btn.disabled = false;
-                if (err.name === 'AbortError') {
+                if (err && err.message === 'TIMEOUT') {
                     setDriveStatus(summary + ' It is taking longer than usual to confirm — this almost always still goes through in the background. If you don\'t get a confirmation email within a few minutes, please check with the office.', false);
                 } else {
                     console.error(err);
